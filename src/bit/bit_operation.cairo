@@ -8,14 +8,11 @@ impl BitOperation of BitOperationTrait {
     }
 
     fn right_shift(mut self: u256, mut count: u128) -> u256 {
-        loop {
-            if count == 0 || self == 0 {
-                break;
-            }
-            self /= 2;
-            count -= 1;
-        };
-        self
+        if count == 0 || self == 0 {
+            self
+        } else {
+            (self / 2).right_shift(count - 1)
+        }
     }
 }
 
