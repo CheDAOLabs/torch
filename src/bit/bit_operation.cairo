@@ -1,21 +1,36 @@
 use super::pow::get_pow;
 
-#[generate_trait]
-impl BitOperation of BitOperationTrait {
-    fn left_shift(mut self: u256, mut count: u128) -> u256 {
+trait BitOperationTrait<
+    T,
+    impl TCopyImpl: Copy<T>,
+    impl TDropImpl: Drop<T>,
+    impl TAddImpl: Add<T>,
+    impl TMulImpl: Mul<T>,
+    impl TDivRemImpl: DivRem<T>,
+    impl TZeroableImpl: Zeroable<T>,
+    impl TTryIntoNonZeroImpl: TryInto<T, NonZero<T>>,
+    impl NumericLiteral: NumericLiteral<T>
+> {
+    fn left_shift(self: T, count: u128) -> T;
+    fn right_shift(self: T, count: u128) -> T;
+}
+
+impl BitOperation_u256 of BitOperationTrait<u256> {
+    fn left_shift(self: u256, count: u128) -> u256 {
         let (result, overflow) = integer::u256_overflow_mul(self, get_pow(count));
         result
     }
 
-    fn right_shift(mut self: u256, mut count: u128) -> u256 {
+    fn right_shift(self: u256, count: u128) -> u256 {
         if count == 0 || self == 0 {
             self
         } else {
-            (self / 2).right_shift(count - 1)
+            let self = self / 2;
+            let count = count - 1;
+            self.right_shift(count)
         }
     }
 }
-
 
 #[test]
 #[available_gas(300000000000000000)]
@@ -38,7 +53,7 @@ fn test() {
     result = c.right_shift(d);
     assert(result == 16, 'right shift over');
 
-    let n = 104616311173140485099082100255315365365044651156030064548209934585479422322683;
+    let n: u256 = 104616311173140485099082100255315365365044651156030064548209934585479422322683;
     let rr = n.right_shift(10);
     let gg = n / 1024;
 
